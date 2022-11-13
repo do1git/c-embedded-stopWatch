@@ -17,8 +17,9 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <stdio.h>
+#include <string.h>
 #include "main.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -31,6 +32,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -62,6 +65,7 @@ static void MX_TIM4_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 char uart_buf[30];
 volatile int second_count, timer_count;
 
@@ -71,10 +75,10 @@ void HAL_SYSTICK_Callback(void){
 		sprintf(uart_buf, "%d,%d\r\n", second_count, timer_count);
 		HAL_UART_Transmit_IT(&huart3,uart_buf,sizeof(uart_buf));
 
-		HAL_GPIO_WritePin(led1_GPIO_Port, led1_Pin, GPIO_PIN_SET);
-		HAL_Delay(100) ;
-		HAL_GPIO_WritePin(led1_GPIO_Port, led1_Pin, GPIO_PIN_RESET);
-		HAL_Delay(100) ;
+//		HAL_GPIO_WritePin(led1_GPIO_Port, led1_Pin, GPIO_PIN_SET);
+//		HAL_Delay(100) ;
+//		HAL_GPIO_WritePin(led1_GPIO_Port, led1_Pin, GPIO_PIN_RESET);
+//		HAL_Delay(100) ;
 		second_count++;
 	}
 	timer_count++;
@@ -114,7 +118,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -124,6 +128,17 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  HAL_GPIO_TogglePin(led1_GPIO_Port, led1_Pin);
+	  HAL_Delay(100) ;
+	  HAL_GPIO_TogglePin(led1_GPIO_Port, led2_Pin);
+	  HAL_Delay(100) ;
+	  HAL_GPIO_TogglePin(led1_GPIO_Port, led3_Pin);
+	  HAL_Delay(100) ;
+
+	  char Buffer[] ="hello";
+
+	  HAL_UART_Transmit(&huart3,Buffer,strlen(Buffer),10);
 //	  HAL_GPIO_WritePin(led1_GPIO_Port, led1_Pin, GPIO_PIN_SET);
 //	  HAL_Delay(500) ;
 //	  HAL_GPIO_WritePin(led1_GPIO_Port, led1_Pin, GPIO_PIN_RESET);
@@ -265,10 +280,10 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 3000;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -326,16 +341,17 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(led1_GPIO_Port, led1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, led1_Pin|led3_Pin|led2_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : led1_Pin */
-  GPIO_InitStruct.Pin = led1_Pin;
+  /*Configure GPIO pins : led1_Pin led3_Pin led2_Pin */
+  GPIO_InitStruct.Pin = led1_Pin|led3_Pin|led2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(led1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
